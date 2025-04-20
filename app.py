@@ -46,17 +46,34 @@ st.markdown('<p style="font-size:18px;"><b>Upload an image of the plant leaf</b>
 st.markdown('<p style="font-size:18px;">Choose an image...</p>', unsafe_allow_html=True)
 
 # Uploading the image
-plant_image = st.file_uploader("", type=["jpeg", "jpg", "png"])
+# File uploader and camera input
+st.markdown('<p style="font-size:18px;"><b>Upload or capture an image...</b></p>', unsafe_allow_html=True)
+
+# Option 1: Upload image
+plant_image = st.file_uploader("Upload a tea leaf image", type=["jpeg", "jpg", "png"])
+
+# Option 2: Capture using webcam
+captured_image = st.camera_input("Or capture a leaf image")
+
+# Predict button
 submit = st.button('Predict')
 
 if submit:
+    image_data = None
+
+    # Determine which source was used
     if plant_image is not None:
-        # Convert uploaded file to an OpenCV image
-        file_bytes = np.asarray(bytearray(plant_image.read()), dtype=np.uint8)
+        image_data = plant_image.read()
+    elif captured_image is not None:
+        image_data = captured_image.read()
+
+    if image_data:
+        # Convert image to OpenCV format
+        file_bytes = np.asarray(bytearray(image_data), dtype=np.uint8)
         opencv_image = cv2.imdecode(file_bytes, 1)
 
-        # Display the uploaded image
-        st.image(opencv_image, channels="BGR", caption="Uploaded Leaf Image")
+        # Display the image
+        st.image(opencv_image, channels="BGR", caption="Input Leaf Image")
         st.write(f"Image shape: {opencv_image.shape}")
 
         # Preprocess the image
@@ -69,7 +86,10 @@ if submit:
         result = CLASS_NAMES[np.argmax(prediction)]
         confidence = np.max(prediction) * 100
 
-        # Display prediction
+        # Show result
         st.markdown(f'<p style="font-size:22px;"><b>This is a tea leaf with {result}</b></p>', unsafe_allow_html=True)
         st.markdown(disease_info[result])
         st.write(f"**Confidence:** {confidence:.2f}%")
+    else:
+        st.warning("Please upload or capture an image before predicting.")
+
