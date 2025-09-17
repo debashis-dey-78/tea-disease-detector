@@ -1,5 +1,5 @@
 streamlit
-tensorflow
-opencv-python-headless
 numpy
-gdown
+opencv-python-headless
+requests
+tensorflow     # full package (has tflite)
